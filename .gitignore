@@ -1,0 +1,23 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.env
+
+# Tool config
+.idea/
+.vscode/
+.claude/
+.langgraph_api/
+
+# Gen files
+temp/
+
+# MCP server cache
+.playwright-mcp/

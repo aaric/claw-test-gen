@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="logo">✓</span> My Todo List</h1>
+        </header>
+
+        <form id="todo-form" class="todo-form">
+            <div class="form-row">
+                <input
+                    type="text"
+                    id="todo-title"
+                    placeholder="What needs to be done?"
+                    required
+                    maxlength="200"
+                >
+                <select id="todo-priority" class="priority-select">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <button type="submit" class="btn-add">Add</button>
+            </div>
+            <textarea
+                id="todo-description"
+                placeholder="Description (optional)"
+                rows="2"
+                maxlength="1000"
+            ></textarea>
+        </form>
+
+        <div class="filter-bar">
+            <span id="todo-count">0 items</span>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="active">Active</button>
+                <button class="filter-btn" data-filter="completed">Completed</button>
+            </div>
+        </div>
+
+        <div id="todo-list" class="todo-list">
+            <!-- Todo items will be rendered here -->
+        </div>
+
+        <div id="empty-state" class="empty-state">
+            <p>No todos yet. Add one above!</p>
+        </div>
+
+        <div class="actions">
+            <button id="clear-completed" class="btn-clear">Clear Completed</button>
+            <a href="/docs" target="_blank" class="api-link">API Documentation</a>
+        </div>
+
+        <div id="notification" class="notification hidden"></div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
