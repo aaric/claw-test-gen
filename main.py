@@ -2,6 +2,7 @@
 from routes import deepseek, books, quickstart
 from calendar import c
 import time
+import uuid
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,6 +24,17 @@ class ProcessTimeHeaderMiddleware(BaseHTTPMiddleware):
         process_time = time.time() - start_time
         response.headers["X-Process-Time"] = str(process_time)
         print(f"Request processed in {process_time} seconds")
+        return response
+
+
+class TraceIDMiddleware(BaseHTTPMiddleware):
+    """添加TraceID请求头"""
+
+    async def dispatch(self, request: Request, call_next):
+        trace_id = request.headers.get("X-Trace-ID") or str(uuid.uuid4())
+        request.state.trace_id = trace_id
+        response = await call_next(request)
+        response.headers["X-Trace-ID"] = trace_id
         return response
 
 
@@ -54,6 +66,7 @@ def create_app() -> FastAPI:
 
 app = create_app()
 app.add_middleware(ProcessTimeHeaderMiddleware)
+app.add_middleware(TraceIDMiddleware)
 
 
 # @app.middleware("http")

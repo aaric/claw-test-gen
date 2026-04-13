@@ -57,5 +57,4 @@ async def send_email_notify(request: Request, backgroud_tasks: BackgroundTasks):
 
     result = backgroud_tasks.add_task(
         send_smtp_email, "user@blueazure.com", "login notifiy", "your login success")
-    log.fatal(f"------------  {result}")
     return {"status": "ok"}
