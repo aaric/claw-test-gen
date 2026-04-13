@@ -5,12 +5,25 @@ import time
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-import fastapi_cdn_host # type: ignore
+import fastapi_cdn_host  # type: ignore
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
+from starlette.middleware.base import BaseHTTPMiddleware
 
 load_dotenv(override=True)
+
+
+class ProcessTimeHeaderMiddleware(BaseHTTPMiddleware):
+    """添加处理时间请求头"""
+
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        response.headers["X-Process-Time"] = str(process_time)
+        print(f"Request processed in {process_time} seconds")
+        return response
 
 
 def create_app() -> FastAPI:
@@ -40,16 +53,17 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+app.add_middleware(ProcessTimeHeaderMiddleware)
 
 
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    """请求头添加处理时间"""
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    return response
+# @app.middleware("http")
+# async def add_process_time_header(request: Request, call_next):
+#     """添加处理时间请求头"""
+#     start_time = time.time()
+#     response = await call_next(request)
+#     process_time = time.time() - start_time
+#     response.headers["X-Process-Time"] = str(process_time)
+#     return response
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
