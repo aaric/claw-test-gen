@@ -1,0 +1,12 @@
+.idea/
+.vscode/
+.git/
+.gitignore
+.env
+.env.local
+.dockerignore
+Dockerfile
+Jenkinsfile
+docker-compose.yml
+README.md
+*.log
