@@ -44,12 +44,9 @@ def create_app() -> FastAPI:
     fastapi_cdn_host.patch_docs(_app)
 
     api_prefix = "/api/claude-test-gen"
-    _app.include_router(quickstart.router,
-                        prefix=f"{api_prefix}/quickstart", tags=["quickstart"])
-    _app.include_router(
-        deepseek.router, prefix=f"{api_prefix}/deepseek", tags=["deepseek"])
-    _app.include_router(
-        books.router, prefix=f"{api_prefix}/books", tags=["books"])
+    _app.include_router(quickstart.router, prefix=f"{api_prefix}/quickstart", tags=["quickstart"])
+    _app.include_router(deepseek.router, prefix=f"{api_prefix}/deepseek", tags=["deepseek"])
+    _app.include_router(books.router, prefix=f"{api_prefix}/books", tags=["books"])
 
     _app.mount("/resoures", StaticFiles(directory="resoures"), name="resoures")
 
@@ -79,4 +76,4 @@ app.add_middleware(TraceIDMiddleware)
 #     return response
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

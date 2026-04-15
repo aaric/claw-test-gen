@@ -3,6 +3,7 @@ import json
 import logging.config
 import os
 from datetime import datetime
+from venv import logger
 
 logging_level_key = os.getenv("LOGGING_LEVEL", "INFO").upper()
 
@@ -103,33 +104,33 @@ def _logging_simple_test():
     )
 
     # log msg
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
     log_file_handler = logging.FileHandler("log.log", mode="w", encoding="utf-8")
     log_file_handler.setFormatter(logging.Formatter(logging_format))
-    log.addHandler(log_file_handler)
-    log.debug("debug msg")
-    log.info("info msg")
-    log.warning("warn msg")
-    log.error("error msg")
-    log.critical("critical msg")
+    logger.addHandler(log_file_handler)
+    logger.debug("debug msg")
+    logger.info("info msg")
+    logger.warning("warn msg")
+    logger.error("error msg")
+    logger.critical("critical msg")
 
     # log except
     try:
         1 / 0
     except:
-        log.exception("except msg")
+        logger.exception("except msg")
 
 
 def _logging_json_test():
     """简单JSON日志测试"""
-    log = create_json_logger(__name__)
-    log.info("用户登录", extra={"extra_data": {"user_id": 123, "ip": "192.168.1.1"}})
+    logger = create_json_logger(__name__)
+    logger.info("用户登录", extra={"extra_data": {"user_id": 123, "ip": "192.168.1.1"}})
 
 
 def _logging_text_test():
     """简单文本日志测试"""
-    log = create_text_logger(__name__)
-    log.info("用户登录：%s", "admin")
+    logger = create_text_logger(__name__)
+    logger.info("用户登录：%s", "admin")
 
 
 if __name__ == "__main__":

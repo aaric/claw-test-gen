@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request
 from utils.logger import create_text_logger
 
 
-log = create_text_logger(__name__)
+logger = create_text_logger(__name__)
 router = APIRouter()
 
 
@@ -14,5 +14,5 @@ router = APIRouter()
 async def get_by_id(id: int = 1):
     """获取图书ID"""
 
-    log.info(f"id={id}")
+    logger.info(f"id={id}")
     return {"id": id, "book": "hello world"}

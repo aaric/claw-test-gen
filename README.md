@@ -41,7 +41,8 @@ LOGGING_LEVEL=INFO
 
 ```bash
 # 开发环境
-fastapi dev main.py --host "0.0.0.0" --port 8000
+#fastapi dev main.py --host "0.0.0.0" --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 # 生产环境（仅 Linux）
 gunicorn -c gunicorn.conf.py main:app
