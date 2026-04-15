@@ -59,6 +59,9 @@ gunicorn -c gunicorn.conf.py main:app
 | `/api/claude-test-gen/quickstart/jinja2` | GET | Jinja2 模板渲染演示 |
 | `/api/claude-test-gen/deepseek/balance` | GET | 查询 DeepSeek API 账户余额 |
 | `/api/claude-test-gen/books/` | GET | 按查询参数获取图书信息 |
+| `/api/claude-test-gen/quickstart/sse-chat-stream` | POST | SSE 文本流式输出 |
+| `/api/claude-test-gen/quickstart/sse-log-generate` | GET | 向指定任务队列推送日志 |
+| `/api/claude-test-gen/quickstart/sse-log-stream/{task_id}` | GET | SSE 日志流式消费（带心跳保活） |
 
 ## 项目结构
 
