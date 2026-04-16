@@ -98,42 +98,41 @@ async def sse_log_generate(task_id: str):
     return {"status": "ok"}
 
 
+async def _log_event_generator(request: Request, task_id: str):
+    """日志事件生成器"""
+    try:
+        while True:
+            if await request.is_disconnected():
+                logger.info(f"客户端已断开, task_id: {task_id}")
+                break
+
+            try:
+                result = await aioredis_client.blpop(f"task:{task_id}:logs", timeout=30) # type: ignore
+            except Exception as e:
+                logger.warning(f"日志出队失败: {e}")
+                yield b": heartbeat\n\n"
+                continue
+
+            if result is None:
+                yield b": heartbeat\n\n"
+                continue
+
+            _, log_data = result
+            if log_data == "[DONE]":
+                yield "event: done\ndata: 任务日志推送完成\n\n".encode("utf-8")
+                break
+
+            logger.info(f"日志出队: {log_data}")
+            yield f"event: log\ndata: {log_data}\n\n".encode("utf-8")
+    finally:
+        logger.info(f"SSE连接关闭, task_id: {task_id}")
+
+
 @router.get("/sse-log-stream/{task_id}")
 async def sse_log_stream(request: Request, task_id: str):
     """日志SSE流输出"""
     logger.info(f"sse_log_stream -> task_id={task_id}")
-
-    async def event_generator():
-        try:
-            while True:
-                # 判断客户端是否已断开
-                if await request.is_disconnected():
-                    logger.info(f"客户端已断开, task_id: {task_id}")
-                    break
-
-                # 获取日志
-                try:
-                    result = await aioredis_client.blpop(f"task:{task_id}:logs", timeout=30) # type: ignore
-                except Exception as e:
-                    logger.warning(f"日志出队失败: {e}")
-                    yield f": heartbeat\n\n"
-                    continue
-
-                if result is None:
-                    yield b": heartbeat\n\n"
-                    continue
-
-                _, log_data = result
-                if log_data == "[DONE]":
-                    yield "event: done\ndata: 任务日志推送完成\n\n".encode("utf-8")
-                    break
-
-                logger.info(f"日志出队: {log_data}")
-                yield f"event: log\ndata: {log_data}\n\n".encode("utf-8")
-        finally:
-            logger.info(f"SSE连接关闭, task_id: {task_id}")
-
     return EventSourceResponse(
-        event_generator(), # type: ignore
+        _log_event_generator(request, task_id),
         headers={"Content-Type": "text/event-stream; charset=utf-8"}
     )
