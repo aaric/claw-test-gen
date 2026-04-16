@@ -3,7 +3,7 @@ import re
 
 from fastapi import APIRouter, Request
 
-from utils.logger import create_text_logger
+from utils.log_utils import create_text_logger
 
 
 logger = create_text_logger(__name__)

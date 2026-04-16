@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 from venv import logger
 
-logging_level_key = os.getenv("LOGGING_LEVEL", "INFO").upper()
+logging_level_key = os.getenv("LOG_LEVEL", "INFO").upper()
 
 logging_level_map = {
     "DEBUG": logging.DEBUG,

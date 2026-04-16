@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
 import time
-import asyncio
 from collections.abc import AsyncIterable
 from datetime import datetime
 
@@ -11,7 +10,8 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel
 
 from routes import books
-from utils.logger import create_text_logger
+from utils.log_utils import create_text_logger
+from utils.redis_utils import aioredis_client
 
 
 logger = create_text_logger(__name__)
@@ -80,57 +80,57 @@ class LogContent(BaseModel):
     content: str | None
 
 
-log_queues: dict[str, asyncio.Queue] = {}
-
-
 @router.get("/sse-log-generate")
 async def sse_log_generate(task_id: str):
     """日志SSE流输出"""
     logger.info(f"sse_log_generate -> task_id={task_id}")
-    if task_id not in log_queues:
-        log_queues[task_id] = asyncio.Queue()
-
     try:
-        # 线程安全地往异步队列放数据
         log = LogContent(module="时间", content=datetime.now().strftime(
             "当前时间：%Y-%m-%d %H:%M:%S"))
-        queue = log_queues[task_id]
+        await aioredis_client.rpush(f"task:{task_id}:logs", log.model_dump_json()) # type: ignore
         logger.info(f"日志入队: {log}")
-        asyncio.run_coroutine_threadsafe(queue.put(log), asyncio.get_event_loop())
     except Exception as e:
         logger.error(f"日志入队失败: {e}")
 
-    # 最后发一个 None 表示结束
-    # time.sleep(0.5)
-    # asyncio.run_coroutine_threadsafe(queue.put(None), asyncio.get_event_loop())
+    # 发送结束标记
+    time.sleep(0.5)
+    await aioredis_client.rpush(f"task:{task_id}:logs", "[DONE]") # type: ignore
+    return {"status": "ok"}
 
 
 @router.get("/sse-log-stream/{task_id}", response_class=EventSourceResponse)
 async def sse_log_stream(request: Request, task_id: str):
     """日志SSE流输出"""
-    if task_id not in log_queues:
-        log_queues[task_id] = asyncio.Queue()
-    queue = log_queues[task_id]
-    logger.info(f"sse_log_stream -> task_id={task_id}, queue_total={queue.qsize()}")
+    key = f"task:{task_id}:logs"
+    logger.info(f"sse_log_stream -> task_id={task_id}")
 
     try:
         while True:
+            # 判断客户端是否已断开
             if await request.is_disconnected():
                 logger.info(f"客户端已断开, task_id: {task_id}")
                 break
 
+            # 获取日志
             try:
-                log = await asyncio.wait_for(queue.get(), timeout=30)
-                logger.info(f"日志出队: {log}")
-            except asyncio.TimeoutError:
+                result = await aioredis_client.blpop(key, timeout=30) # type: ignore
+                logger.info(f"日志出队: {result}")
+            except Exception as e:
+                logger.error(f"日志出队失败: {e}")
                 yield f": heartbeat\n\n"
                 continue
 
-            if log is None:
+            # 发送心跳包
+            if result is None:
+                yield f": heartbeat\n\n"
+                continue
+
+            # 结束标记
+            _, log_data = result
+            if log_data == "[DONE]":
                 yield ServerSentEvent(event="done", data="任务日志推送完成")
                 break
 
-            yield ServerSentEvent(event="log", data=log.model_dump_json())
+            yield ServerSentEvent(event="log", data=log_data)
     finally:
-        log_queues.pop(task_id, None)
-        logger.info(f"队列已清理, task_id: {task_id}")
+        logger.info(f"SSE连接关闭, task_id: {task_id}")

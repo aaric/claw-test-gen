@@ -4,7 +4,7 @@ import json
 from fastapi import APIRouter
 
 from llms.deepseek import deepseek_balance
-from utils.logger import create_text_logger
+from utils.log_utils import create_text_logger
 
 
 logger = create_text_logger(__name__)
