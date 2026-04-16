@@ -4,10 +4,10 @@ import time
 from collections.abc import AsyncIterable
 from datetime import datetime
 
-from fastapi import APIRouter, Request, BackgroundTasks
+from fastapi import APIRouter, Request, BackgroundTasks, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.sse import EventSourceResponse, ServerSentEvent
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from routes import books
 from utils.log_utils import create_text_logger
@@ -22,7 +22,6 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/params")
 async def get_params(request: Request):
     """获取指定 GET 参数"""
-
     page_num = request.query_params.get("page_num")
     page_size = request.query_params.get("page_size")
     logger.info(f"page_num={page_num}, page_size={page_size}")
@@ -32,7 +31,6 @@ async def get_params(request: Request):
 @router.post("/params")
 async def post_params(request: Request):
     """获取指定 GET 参数"""
-
     page_num = request.query_params.get("page_num")
     page_size = request.query_params.get("page_size")
     body = await request.json()
@@ -40,17 +38,31 @@ async def post_params(request: Request):
     return body
 
 
+class LoginInput(BaseModel):
+    """登录输入"""
+    username: str = Field(description="用户名")
+    password: str = Field(description="密码")
+
+
+@router.post("/login")
+async def post_json(login_input: LoginInput, code: str | None = Query(default=None, description="验证码")) -> dict:
+    """模拟登录接口"""
+    logger.info(f"username={login_input.username}, password={login_input.password}, code={code}")
+    if login_input.username == "admin" and login_input.password == "admin":
+        return {"status": "ok"}
+    else:
+        return {"status": "error", "message": "用户名或密码错误"}
+
+
 @router.get("/jinja2")
 async def get_jinja2(request: Request):
     """使用 Jinja2 模板引擎"""
-
     logger.info(f"request={request}")
     return templates.TemplateResponse(request=request, name="index.html", context={"books": ["C++", "Python", "Java"]})
 
 
 def send_smtp_email(to, subject, content):
     """发送邮件"""
-
     logger.info(f"to={to}, subject={subject}, content={content}")
     time.sleep(5)
     logger.info(f"to={to}, send=ok")
@@ -59,7 +71,6 @@ def send_smtp_email(to, subject, content):
 @router.post("/send-email-notify")
 async def send_email_notify(request: Request, backgroud_tasks: BackgroundTasks):
     """异步发送邮件通知"""
-
     result = backgroud_tasks.add_task(
         send_smtp_email, "user@blueazure.com", "login notifiy", "your login success")
     return {"status": "ok"}

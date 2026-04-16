@@ -40,7 +40,11 @@ class TraceIDMiddleware(BaseHTTPMiddleware):
 
 def create_app() -> FastAPI:
     """创建和配置FastAPI应用"""
-    _app = FastAPI()
+    _app = FastAPI(
+        title="在线AIP文档",
+        description="这是一个演示各种参数提取方式的示例接口。",
+        version="1.0.0",
+    )
     fastapi_cdn_host.patch_docs(_app)
 
     api_prefix = "/api/claude-test-gen"
@@ -76,4 +80,5 @@ app.add_middleware(TraceIDMiddleware)
 #     return response
 
 if __name__ == "__main__":
+    # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
