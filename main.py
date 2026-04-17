@@ -42,7 +42,7 @@ def create_app() -> FastAPI:
     """创建和配置FastAPI应用"""
     _app = FastAPI(
         title="在线AIP文档",
-        description="这是一个演示各种参数提取方式的示例接口。",
+        description="这是一个FastAPI示例项目接口文档。",
         version="1.0.0",
     )
     fastapi_cdn_host.patch_docs(_app)

@@ -42,6 +42,7 @@ class LoginInput(BaseModel):
     """登录输入"""
     username: str = Field(description="用户名")
     password: str = Field(description="密码")
+    invitation_code: str | None = Field(default=None, description="邀请码")
 
 
 @router.post("/login")
