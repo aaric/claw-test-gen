@@ -67,14 +67,19 @@ def response_success(data: Any = None, message: str = "SUCCESS") -> StdApiRespon
     return StdApiResponse.success(data=data, message=message)
 
 
-def response_error(code: int, message: str) -> StdApiResponse:
-    """错误响应快捷方式"""
-    return StdApiResponse.error(code=code, message=message)
-
-
 def response_success_page(current: int, size: int, total: int, records: List[Any]) -> StdApiResponse:
     """分页成功响应快捷方式"""
     return StdApiResponse.success_page(current=current, size=size, total=total, records=records)
+
+
+def response_exception(message: str) -> StdApiResponse:
+    """错误响应快捷方式"""
+    return StdApiResponse.error(code=500, message=message)
+
+
+def response_error(code: int, message: str) -> StdApiResponse:
+    """错误响应快捷方式"""
+    return StdApiResponse.error(code=code, message=message)
 
 
 class StdBizException(Exception):
