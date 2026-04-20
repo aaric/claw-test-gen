@@ -3,6 +3,8 @@ import re
 import time
 from collections.abc import AsyncIterable
 from datetime import datetime
+import token
+from uuid import uuid4
 
 from fastapi import APIRouter, Request, BackgroundTasks, Query
 from fastapi.templating import Jinja2Templates
@@ -12,6 +14,7 @@ from pydantic import BaseModel, Field
 from routes import books
 from utils.log_utils import create_text_logger
 from utils.redis_utils import aioredis_client
+from utils.response_utils import StdApiResponse
 
 
 logger = create_text_logger(__name__)
@@ -48,7 +51,8 @@ class LoginInput(BaseModel):
 @router.post("/login")
 async def post_json(login_input: LoginInput, code: str | None = Query(default=None, description="验证码")) -> dict:
     """模拟登录接口"""
-    logger.info(f"username={login_input.username}, password={login_input.password}, code={code}")
+    logger.info(
+        f"username={login_input.username}, password={login_input.password}, code={code}")
     if login_input.username == "admin" and login_input.password == "admin":
         return {"status": "ok"}
     else:
@@ -148,3 +152,27 @@ async def sse_log_stream(request: Request, task_id: str):
         _log_event_generator(request, task_id),
         headers={"Content-Type": "text/event-stream; charset=utf-8"}
     )
+
+
+class LoginRequest(BaseModel):
+    """登录请求"""
+    username: str = Field(description="用户名")
+    password: str = Field(description="密码")
+
+
+class LoginResult(BaseModel):
+    """登录响应"""
+    id: int = Field(description="ID")
+    username: str = Field(description="用户名")
+    token: str = Field(description="令牌")
+
+
+@router.post("/fake-login", response_model=StdApiResponse[LoginResult])
+async def fake_login(body: LoginRequest):
+    """保存或更新单个测试方法向量"""
+    logger.info(f"fake_login -> body={body}")
+    return StdApiResponse.success(LoginResult(
+        id=1,
+        username="admin",
+        token=str(uuid4())
+    ))

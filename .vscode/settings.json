@@ -8,5 +8,10 @@
   "terminal.integrated.env.linux": {
     "PYTHONPATH": "${workspaceFolder}"
   },
-  "python.analysis.extraPaths": ["${workspaceFolder}"]
+  "python.analysis.extraPaths": ["${workspaceFolder}"],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "editor.formatOnSave": false
+  },
+  "autopep8.args": ["--max-line-length=120", "--ignore=E501"]
 }
