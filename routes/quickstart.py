@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from routes import books
 from utils.log_utils import create_text_logger
 from utils.redis_utils import aioredis_client
-from utils.response_utils import StdApiResponse
+from utils.response_utils import StdApiResponse, response_success
 
 
 logger = create_text_logger(__name__)
@@ -103,14 +103,14 @@ async def sse_log_generate(task_id: str):
     try:
         log = LogContent(module="时间", content=datetime.now().strftime(
             "当前时间：%Y-%m-%d %H:%M:%S"))
-        await aioredis_client.rpush(f"task:{task_id}:logs", log.model_dump_json()) # type: ignore
+        await aioredis_client.rpush(f"task:{task_id}:logs", log.model_dump_json())  # type: ignore
         logger.info(f"日志入队: {log}")
     except Exception as e:
         logger.error(f"日志入队失败: {e}")
 
     # 发送结束标记
     time.sleep(0.5)
-    await aioredis_client.rpush(f"task:{task_id}:logs", "[DONE]") # type: ignore
+    await aioredis_client.rpush(f"task:{task_id}:logs", "[DONE]")  # type: ignore
     return {"status": "ok"}
 
 
@@ -123,7 +123,7 @@ async def _log_event_generator(request: Request, task_id: str):
                 break
 
             try:
-                result = await aioredis_client.blpop(f"task:{task_id}:logs", timeout=30) # type: ignore
+                result = await aioredis_client.blpop(f"task:{task_id}:logs", timeout=30)  # type: ignore
             except Exception as e:
                 logger.warning(f"日志出队失败: {e}")
                 yield b": heartbeat\n\n"
@@ -171,7 +171,7 @@ class LoginResult(BaseModel):
 async def fake_login(body: LoginRequest):
     """保存或更新单个测试方法向量"""
     logger.info(f"fake_login -> body={body}")
-    return StdApiResponse.success(LoginResult(
+    return response_success(LoginResult(
         id=1,
         username="admin",
         token=str(uuid4())

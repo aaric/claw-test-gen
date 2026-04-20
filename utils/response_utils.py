@@ -35,8 +35,7 @@ class StdApiResponse(BaseModel, Generic[T]):
     @classmethod
     def success_page(cls, current: int, size: int, total: int, records: List[Any]) -> "StdApiResponse[StdPageResult]":
         """分页成功响应"""
-        page_info = StdPageResult(current=current, size=size,
-                               total=total, records=records)
+        page_info = StdPageResult(current=current, size=size, total=total, records=records)
         return cls.success(data=page_info)
 
 
@@ -60,20 +59,35 @@ class StdPageResult(BaseModel):
     records: List[Any] = Field(default_factory=list, description="当前页数据列表")
 
 
+def response_success(data: Any = None, message: str = "SUCCESS") -> StdApiResponse:
+    """成功响应快捷方式"""
+    return StdApiResponse.success(data=data, message=message)
+
+
+def response_error(code: int, message: str) -> StdApiResponse:
+    """错误响应快捷方式"""
+    return StdApiResponse.error(code=code, message=message)
+
+
+def response_success_page(current: int, size: int, total: int, records: List[Any]) -> StdApiResponse:
+    """分页成功响应快捷方式"""
+    return StdApiResponse.success_page(current=current, size=size, total=total, records=records)
+
+
 if __name__ == "__main__":
-    response_none = StdApiResponse[None]()  # type: ignore
-    print(response_none.model_dump_json(indent=2))
+    none_resp = StdApiResponse[None]()  # type: ignore
+    print(none_resp.model_dump_json(indent=2))
 
-    response_object = StdApiResponse.success({"id": 1, "name": "张三"})
-    print(response_object.model_dump_json(indent=2))
+    object_resp = response_success({"id": 1, "name": "张三"})
+    print(object_resp.model_dump_json(indent=2))
 
-    response_page = StdApiResponse.success_page(
+    page_resp = response_success_page(
         current=1,
         size=20,
         total=36,
         records=[{"id": 1, "name": "张三"}, {"id": 2, "name": "李四"}]
     )
-    print(response_page.model_dump_json(indent=2))
+    print(page_resp.model_dump_json(indent=2))
 
-    response_error = StdApiResponse.error(400, "参数校验失败：用户名不能为空")
-    print(response_error.model_dump_json(indent=2))
+    err_resp = response_error(400, "参数校验失败：用户名不能为空")
+    print(err_resp.model_dump_json(indent=2))
