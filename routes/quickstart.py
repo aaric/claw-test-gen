@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from routes import books
 from utils.log_utils import create_text_logger
 from utils.redis_utils import aioredis_client
-from utils.response_utils import StdApiResponse, response_success
+from utils.response_utils import StdApiResponse, StdBizException, response_success
 
 
 logger = create_text_logger(__name__)
@@ -41,7 +41,7 @@ async def post_params(request: Request):
     return body
 
 
-class LoginInput(BaseModel):
+class LoginRequest(BaseModel):
     """登录输入"""
     username: str = Field(description="用户名")
     password: str = Field(description="密码")
@@ -49,11 +49,11 @@ class LoginInput(BaseModel):
 
 
 @router.post("/login")
-async def post_json(login_input: LoginInput, code: str | None = Query(default=None, description="验证码")) -> dict:
+async def post_json(body: LoginRequest, code: str | None = Query(default=None, description="验证码")) -> dict:
     """模拟登录接口"""
     logger.info(
-        f"username={login_input.username}, password={login_input.password}, code={code}")
-    if login_input.username == "admin" and login_input.password == "admin":
+        f"username={body.username}, password={body.password}, code={code}")
+    if body.username == "admin" and body.password == "admin":
         return {"status": "ok"}
     else:
         return {"status": "error", "message": "用户名或密码错误"}
@@ -154,25 +154,33 @@ async def sse_log_stream(request: Request, task_id: str):
     )
 
 
-class LoginRequest(BaseModel):
+class FakeLoginRequest(BaseModel):
     """登录请求"""
     username: str = Field(description="用户名")
     password: str = Field(description="密码")
 
 
-class LoginResult(BaseModel):
+class FakeLoginResult(BaseModel):
     """登录响应"""
     id: int = Field(description="ID")
     username: str = Field(description="用户名")
     token: str = Field(description="令牌")
 
 
-@router.post("/fake-login", response_model=StdApiResponse[LoginResult])
-async def fake_login(body: LoginRequest):
-    """保存或更新单个测试方法向量"""
-    logger.info(f"fake_login -> body={body}")
-    return response_success(LoginResult(
+@router.post("/std-fake-login", response_model=StdApiResponse[FakeLoginResult])
+async def std_fake_login(body: FakeLoginRequest):
+    """标准测试登录接口"""
+    logger.info(f"std_fake_login -> body={body}")
+    return response_success(FakeLoginResult(
         id=1,
         username="admin",
         token=str(uuid4())
     ))
+
+
+@router.post("/std-error-login")
+async def std_error_login(body: FakeLoginRequest):
+    """标准异常登录接口"""
+    logger.info(f"std_error_login -> body={body}")
+    # a = 1 / 0
+    raise StdBizException(code=500, message="网络连接超时")

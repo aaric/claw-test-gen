@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from typing import Generic, TypeVar, Optional, Any, List
 
+from fastapi import Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ConfigDict
 
 T = TypeVar("T")
@@ -72,6 +75,30 @@ def response_error(code: int, message: str) -> StdApiResponse:
 def response_success_page(current: int, size: int, total: int, records: List[Any]) -> StdApiResponse:
     """分页成功响应快捷方式"""
     return StdApiResponse.success_page(current=current, size=size, total=total, records=records)
+
+
+class StdBizException(Exception):
+    """统一业务异常信息"""
+
+    def __init__(self, code: int, message: str):
+        self.code = code
+        self.message = message
+        super().__init__(message)
+
+
+async def custom_global_error_handler(request: Request, e: Exception):
+    """全局异常处理"""
+    return JSONResponse(status_code=200, content=response_error(code=500, message=str(e)).model_dump())
+
+
+async def custom_validation_error_handler(request: Request, e: RequestValidationError):
+    """参数校验异常处理"""
+    return JSONResponse(status_code=200, content=response_error(code=400, message=str(e)).model_dump())
+
+
+async def custom_biz_exception_handler(request: Request, e: StdBizException):
+    """业务异常处理"""
+    return JSONResponse(status_code=200, content=response_error(code=e.code, message=e.message).model_dump())
 
 
 if __name__ == "__main__":

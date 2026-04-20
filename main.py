@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from utils.response_utils import *
+
 load_dotenv(override=True)
 
 
@@ -40,6 +42,7 @@ class TraceIDMiddleware(BaseHTTPMiddleware):
 
 def create_app() -> FastAPI:
     """创建和配置FastAPI应用"""
+    # 基本信息
     _app = FastAPI(
         title="在线AIP文档",
         description="这是一个FastAPI示例项目接口文档。",
@@ -47,13 +50,16 @@ def create_app() -> FastAPI:
     )
     fastapi_cdn_host.patch_docs(_app)
 
+    # 定义路由
     api_prefix = "/api/claude-test-gen"
     _app.include_router(quickstart.router, prefix=f"{api_prefix}/quickstart", tags=["quickstart"])
     _app.include_router(deepseek.router, prefix=f"{api_prefix}/deepseek", tags=["deepseek"])
     _app.include_router(books.router, prefix=f"{api_prefix}/books", tags=["books"])
 
+    # 静态资源
     _app.mount("/resoures", StaticFiles(directory="resoures"), name="resoures")
 
+    # 中间件
     _app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -61,6 +67,11 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # 异常处理
+    _app.add_exception_handler(Exception, custom_global_error_handler)
+    _app.add_exception_handler(RequestValidationError, custom_validation_error_handler)  # type: ignore[arg-type]
+    _app.add_exception_handler(StdBizException, custom_biz_exception_handler)  # type: ignore[arg-type]
 
     return _app
 
