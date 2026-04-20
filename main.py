@@ -90,6 +90,20 @@ app.add_middleware(TraceIDMiddleware)
 #     response.headers["X-Process-Time"] = str(process_time)
 #     return response
 
+
+# @app.exception_handler(Exception)
+# async def global_exception_handler(request: Request, exc: Exception):
+#     """捕获所有未处理的异常（服务器错误）"""
+#     return JSONResponse(
+#         content={
+#             "code": 500,
+#             "msg": f"服务器异常：{str(exc)}",
+#             "data": None
+#         },
+#         status_code=200  # HTTP 状态码你可以自己定
+#     )
+
+
 if __name__ == "__main__":
     # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
