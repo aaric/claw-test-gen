@@ -178,6 +178,17 @@ async def std_fake_login(body: FakeLoginRequest):
     ))
 
 
+@router.post("/std-fake-login-list", response_model=StdApiResponse[list[FakeLoginResult]])
+async def std_fake_login_list(body: list[FakeLoginRequest]):
+    """标准测试登录接口"""
+    logger.info(f"std_fake_login_list -> body={body}")
+    return response_success([FakeLoginResult(
+        id=1,
+        username="admin",
+        token=str(uuid4())
+    )])
+
+
 @router.post("/std-error-login")
 async def std_error_login(body: FakeLoginRequest):
     """标准异常登录接口"""

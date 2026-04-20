@@ -31,15 +31,15 @@ class StdApiResponse(BaseModel, Generic[T]):
         return cls(code=200, message=message, data=data)
 
     @classmethod
-    def error(cls, code: int, message: str) -> "StdApiResponse":
-        """错误响应"""
-        return cls(code=code, message=message, data=None)
-
-    @classmethod
     def success_page(cls, current: int, size: int, total: int, records: List[Any]) -> "StdApiResponse[StdPageResult]":
         """分页成功响应"""
         page_info = StdPageResult(current=current, size=size, total=total, records=records)
         return cls.success(data=page_info)
+
+    @classmethod
+    def error(cls, code: int, message: str) -> "StdApiResponse":
+        """错误响应"""
+        return cls(code=code, message=message, data=None)
 
 
 class StdPageResult(BaseModel):
@@ -72,11 +72,6 @@ def response_success_page(current: int, size: int, total: int, records: List[Any
     return StdApiResponse.success_page(current=current, size=size, total=total, records=records)
 
 
-def response_exception(message: str) -> StdApiResponse:
-    """错误响应快捷方式"""
-    return StdApiResponse.error(code=500, message=message)
-
-
 def response_error(code: int, message: str) -> StdApiResponse:
     """错误响应快捷方式"""
     return StdApiResponse.error(code=code, message=message)
@@ -104,6 +99,11 @@ async def custom_validation_error_handler(request: Request, e: RequestValidation
 async def custom_biz_exception_handler(request: Request, e: StdBizException):
     """业务异常处理"""
     return JSONResponse(status_code=200, content=response_error(code=e.code, message=e.message).model_dump())
+
+
+def raise_exception_biz(message: str) -> StdApiResponse:
+    """抛出业务异常"""
+    raise StdBizException(code=500, message=message)
 
 
 if __name__ == "__main__":
