@@ -8,8 +8,6 @@ from utils.log_utils import create_text_logger
 
 
 logger = create_text_logger(__name__)
-
-
 prompt_config = parse_config(base_dir / "prompts.yaml")
 
 
