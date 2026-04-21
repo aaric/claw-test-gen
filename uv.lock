@@ -405,14 +405,14 @@ dependencies = [
 requires-dist = [
     { name = "aerich", specifier = ">=0.8.1" },
     { name = "asyncpg", specifier = ">=0.31.0" },
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.135.3" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.136.0" },
     { name = "fastapi-cdn-host", specifier = ">=0.10.0" },
     { name = "gunicorn", specifier = ">=25.3.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "langchain", specifier = ">=1.2.15" },
     { name = "langchain-community", specifier = ">=0.4.1" },
     { name = "langchain-deepseek", specifier = ">=1.0.1" },
-    { name = "langgraph-cli", extras = ["inmem"], specifier = ">=0.4.21" },
+    { name = "langgraph-cli", extras = ["inmem"], specifier = ">=0.4.23" },
     { name = "redis", specifier = ">=7.4.0" },
     { name = "requests", specifier = ">=2.33.1" },
     { name = "tortoise-orm", specifier = ">=1.1.7" },
@@ -568,7 +568,7 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.135.3"
+version = "0.136.0"
 source = { registry = "http://mirrors.aliyun.com/pypi/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -577,15 +577,16 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspection" },
 ]
-sdist = { url = "http://mirrors.aliyun.com/pypi/packages/f7/e6/7adb4c5fa231e82c35b8f5741a9f2d055f520c29af5546fd70d3e8e1cd2e/fastapi-0.135.3.tar.gz", hash = "sha256:bd6d7caf1a2bdd8d676843cdcd2287729572a1ef524fc4d65c17ae002a1be654" }
+sdist = { url = "http://mirrors.aliyun.com/pypi/packages/4e/d9/e66315807e41e69e7f6a1b42a162dada2f249c5f06ad3f1a95f84ab336ef/fastapi-0.136.0.tar.gz", hash = "sha256:cf08e067cc66e106e102d9ba659463abfac245200752f8a5b7b1e813de4ff73e" }
 wheels = [
-    { url = "http://mirrors.aliyun.com/pypi/packages/84/a4/5caa2de7f917a04ada20018eccf60d6cc6145b0199d55ca3711b0fc08312/fastapi-0.135.3-py3-none-any.whl", hash = "sha256:9b0f590c813acd13d0ab43dd8494138eb58e484bfac405db1f3187cfc5810d98" },
+    { url = "http://mirrors.aliyun.com/pypi/packages/26/a3/0bd5f0cdb0bbc92650e8dc457e9250358411ee5d1b65e42b6632387daf81/fastapi-0.136.0-py3-none-any.whl", hash = "sha256:8793d44ec7378e2be07f8a013cf7f7aa47d6327d0dfe9804862688ec4541a6b4" },
 ]
 
 [package.optional-dependencies]
 standard = [
     { name = "email-validator" },
     { name = "fastapi-cli", extra = ["standard"] },
+    { name = "fastar" },
     { name = "httpx" },
     { name = "jinja2" },
     { name = "pydantic-extra-types" },
@@ -1400,7 +1401,7 @@ wheels = [
 
 [[package]]
 name = "langgraph-cli"
-version = "0.4.21"
+version = "0.4.23"
 source = { registry = "http://mirrors.aliyun.com/pypi/simple" }
 dependencies = [
     { name = "click" },
@@ -1409,9 +1410,9 @@ dependencies = [
     { name = "pathspec" },
     { name = "python-dotenv" },
 ]
-sdist = { url = "http://mirrors.aliyun.com/pypi/packages/ad/42/6320aad6dfe95827e6fbf6a9e835263b554b340c0cf12386cc6a4403471d/langgraph_cli-0.4.21.tar.gz", hash = "sha256:7c03c69d22e0f12267c576cef23b4b29e0a631b83902075c8e75d6c549c9d993" }
+sdist = { url = "http://mirrors.aliyun.com/pypi/packages/4d/f0/f987c13cf35214bbe1a6f6f911b3e61afaa071b7bb3d7b2a94ffd2cff921/langgraph_cli-0.4.23.tar.gz", hash = "sha256:620d2fe7506580d57e90384ae42495af7f6092e8f7c6c11f8e010a8e57177075" }
 wheels = [
-    { url = "http://mirrors.aliyun.com/pypi/packages/93/38/6d7231122820bded2467dd88028e2ff2e2210a166f18311ea261ee5998f8/langgraph_cli-0.4.21-py3-none-any.whl", hash = "sha256:34e5a228293339bf45d10a6c713ace742314d6047adcf909acc7d2decbb1b825" },
+    { url = "http://mirrors.aliyun.com/pypi/packages/c6/cb/079bf0aaabbe49a88ee5e51196f461f2f15bfa35c743b15d8a31ff983d88/langgraph_cli-0.4.23-py3-none-any.whl", hash = "sha256:3b4357c0dfa4725628b119f4aa543298cd6fa6cd948ac3a5480b404fedb7a536" },
 ]
 
 [package.optional-dependencies]

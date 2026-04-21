@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from math import log
 import re
 import time
 from collections.abc import AsyncIterable
@@ -6,7 +7,7 @@ from datetime import datetime
 import token
 from uuid import uuid4
 
-from fastapi import APIRouter, Request, BackgroundTasks, Query
+from fastapi import APIRouter, Request, BackgroundTasks, Query, WebSocket, WebSocketDisconnect
 from fastapi.templating import Jinja2Templates
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel, Field
@@ -41,22 +42,59 @@ async def post_params(request: Request):
     return body
 
 
-class LoginRequest(BaseModel):
-    """登录输入"""
+class FakeLoginRequest(BaseModel):
+    """登录请求"""
     username: str = Field(description="用户名")
     password: str = Field(description="密码")
     invitation_code: str | None = Field(default=None, description="邀请码")
 
 
-@router.post("/login")
-async def post_json(body: LoginRequest, code: str | None = Query(default=None, description="验证码")) -> dict:
+class FakeLoginResult(BaseModel):
+    """登录响应"""
+    id: int = Field(description="ID")
+    username: str = Field(description="用户名")
+    token: str = Field(description="令牌")
+
+
+@router.post("/simple-login")
+async def simple_login(body: FakeLoginRequest, t: int | None = Query(default=None, description="时间戳")) -> dict:
     """模拟登录接口"""
     logger.info(
-        f"username={body.username}, password={body.password}, code={code}")
+        f"username={body.username}, password={body.password}, t={t}")
     if body.username == "admin" and body.password == "admin":
         return {"status": "ok"}
     else:
         return {"status": "error", "message": "用户名或密码错误"}
+
+
+@router.post("/std-fake-login", response_model=StdApiResponse[FakeLoginResult])
+async def std_fake_login(body: FakeLoginRequest):
+    """标准测试登录接口"""
+    logger.info(f"std_fake_login -> body={body}")
+    return response_success(FakeLoginResult(
+        id=1,
+        username="admin",
+        token=str(uuid4())
+    ))
+
+
+@router.post("/std-fake-login-list", response_model=StdApiResponse[list[FakeLoginResult]])
+async def std_fake_login_list(body: list[FakeLoginRequest]):
+    """标准测试登录接口"""
+    logger.info(f"std_fake_login_list -> body={body}")
+    return response_success([FakeLoginResult(
+        id=1,
+        username="admin",
+        token=str(uuid4())
+    )])
+
+
+@router.post("/std-error-login")
+async def std_error_login(body: FakeLoginRequest):
+    """标准异常登录接口"""
+    logger.info(f"std_error_login -> body={body}")
+    # a = 1 / 0
+    raise StdBizException(code=500, message="网络连接超时")
 
 
 @router.get("/jinja2")
@@ -154,44 +192,28 @@ async def sse_log_stream(request: Request, task_id: str):
     )
 
 
-class FakeLoginRequest(BaseModel):
-    """登录请求"""
-    username: str = Field(description="用户名")
-    password: str = Field(description="密码")
+websocket_clients: dict[str, WebSocket] = {}
 
 
-class FakeLoginResult(BaseModel):
-    """登录响应"""
-    id: int = Field(description="ID")
-    username: str = Field(description="用户名")
-    token: str = Field(description="令牌")
+@router.websocket("/ws-chat/{chat_id}")
+async def ws_chat(websocket: WebSocket, chat_id: str = "1234"):
+    """WebSocket聊天接口"""
+    logger.info(f"ws_chat -> chat_id={chat_id}")
+    await websocket.accept()
+    websocket_clients[chat_id] = websocket
+    try:
+        while True:
+            text = await websocket.receive_text()
+            await websocket.send_text(f"{text} received")
+    except WebSocketDisconnect:
+        logger.info(f"WebSocket连接断开, chat_id: {chat_id}")
+        websocket_clients.pop(chat_id, None)
 
 
-@router.post("/std-fake-login", response_model=StdApiResponse[FakeLoginResult])
-async def std_fake_login(body: FakeLoginRequest):
-    """标准测试登录接口"""
-    logger.info(f"std_fake_login -> body={body}")
-    return response_success(FakeLoginResult(
-        id=1,
-        username="admin",
-        token=str(uuid4())
-    ))
-
-
-@router.post("/std-fake-login-list", response_model=StdApiResponse[list[FakeLoginResult]])
-async def std_fake_login_list(body: list[FakeLoginRequest]):
-    """标准测试登录接口"""
-    logger.info(f"std_fake_login_list -> body={body}")
-    return response_success([FakeLoginResult(
-        id=1,
-        username="admin",
-        token=str(uuid4())
-    )])
-
-
-@router.post("/std-error-login")
-async def std_error_login(body: FakeLoginRequest):
-    """标准异常登录接口"""
-    logger.info(f"std_error_login -> body={body}")
-    # a = 1 / 0
-    raise StdBizException(code=500, message="网络连接超时")
+@router.get("/ws-broadcast-msg")
+async def ws_broadcast_msg(msg: str):
+    """WebSocket群发消息"""
+    logger.info(f"ws_broadcast_msg -> msg={msg}")
+    for client in websocket_clients.values():
+        await client.send_text(msg)
+    return response_success({"status": "ok"})
