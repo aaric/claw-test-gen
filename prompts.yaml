@@ -1,0 +1,13 @@
+default_model_name: "deepseek:deepseek-chat"
+
+prompts:
+  "extras/aa.py:a1":
+    system_prompt: |
+      你是一个专家。
+    user_prompt: |
+      a1
+  "extras/bb.py:b1":
+    system_prompt: |
+      你是一个专家。
+    user_prompt: |
+      b1

@@ -15,6 +15,7 @@ dependencies = [
     "langchain-community>=0.4.1",
     "langchain-deepseek>=1.0.1",
     "langgraph-cli[inmem]>=0.4.23",
+    "pyaml-env>=1.2.2",
     "redis>=7.4.0",
     "requests>=2.33.1",
     "tortoise-orm>=1.1.7",
