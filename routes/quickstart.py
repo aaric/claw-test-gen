@@ -225,8 +225,14 @@ async def invoke_prompt_api(agent_key: str = "extras/aa.py:a1"):
     """调用提示词API"""
     logger.info(f"invoke_prompt_api -> agent_key={agent_key}")
     prompt_cloud = get_prompt_cloud(agent_key)
+    # user_prompt_str = str(prompt_cloud.user_prompt).format(**locals())  # type: ignore
     whoami = "admin"
-    # user_prompt_str = str(prompt_cloud.user_prompt).format(whoami="user")
-    user_prompt_str = str(prompt_cloud.user_prompt).format(**locals())
+    depts = ["aa", "bb", "cc"]
+    depts_len = len(depts)
+    user_prompt_str = str(prompt_cloud.user_prompt).format(  # type: ignore
+        whoami=whoami,
+        depts=depts,
+        depts_len=depts_len
+    )
     logger.info(f"invoke_prompt_api -> user_prompt_str={user_prompt_str}")
     return response_success(prompt_cloud)
