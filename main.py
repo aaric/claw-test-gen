@@ -6,7 +6,7 @@ import uuid
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-import fastapi_cdn_host  # type: ignore
+from fastapi_cdn_host import patch_docs, AssetUrl
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
@@ -48,7 +48,15 @@ def create_app() -> FastAPI:
         description="这是一个FastAPI示例项目接口文档。",
         version="1.0.0",
     )
-    fastapi_cdn_host.patch_docs(_app)
+    patch_docs(
+        _app,
+        cdn_host=AssetUrl(
+            js="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.js",
+            css="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.css",
+            redoc="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js",
+            favicon="https://fastapi.tiangolo.com/img/favicon.png"
+        )
+    )
 
     # 定义路由
     api_prefix = "/api/claude-test-gen"

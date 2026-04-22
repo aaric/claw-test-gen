@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from routes import books
 from utils.log_utils import create_text_logger
+from utils.prompt_utils import get_prompt_cloud
 from utils.redis_utils import aioredis_client
 from utils.response_utils import StdApiResponse, StdBizException, response_success
 
@@ -217,3 +218,15 @@ async def ws_broadcast_msg(msg: str):
     for client in websocket_clients.values():
         await client.send_text(msg)
     return response_success({"status": "ok"})
+
+
+@router.get("/invoke-prompt-api")
+async def invoke_prompt_api(agent_key: str = "extras/aa.py:a1"):
+    """调用提示词API"""
+    logger.info(f"invoke_prompt_api -> agent_key={agent_key}")
+    prompt_cloud = get_prompt_cloud(agent_key)
+    whoami = "admin"
+    # user_prompt_str = str(prompt_cloud.user_prompt).format(whoami="user")
+    user_prompt_str = str(prompt_cloud.user_prompt).format(**locals())
+    logger.info(f"invoke_prompt_api -> user_prompt_str={user_prompt_str}")
+    return response_success(prompt_cloud)

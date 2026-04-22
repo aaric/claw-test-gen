@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 import inspect
 import os
 from pathlib import Path
@@ -6,6 +7,11 @@ from utils.log_utils import create_text_logger
 
 # project dir
 base_dir = Path(__file__).parent.parent
+
+
+def get_current_seconds():
+    """获取当前时间秒"""
+    return int(time.time())
 
 
 def get_func_info(func) -> tuple[str, str]:
