@@ -1,15 +1,26 @@
 import os
 
-import requests # type: ignore
+import requests  # type: ignore
 from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model # type: ignore
+from langchain.chat_models import init_chat_model  # type: ignore
 
 load_dotenv(override=True)
 
-chat_model = init_chat_model(
-    model=os.environ["DEEPSEEK_CHAT_MODEL_NAME"],
-    model_provider=os.environ["DEEPSEEK_MODEL_PROVIDER"]
-)
+# chat_model = init_chat_model(
+#     model=os.environ["DEEPSEEK_CHAT_MODEL_NAME"],
+#     model_provider=os.environ["DEEPSEEK_MODEL_PROVIDER"]
+# )
+
+
+def init_deepseek_chat_model(model_name: str):
+    """初始化一个dashscope对话模型"""
+    return init_chat_model(
+        model=model_name,
+        model_provider=os.environ["DEEPSEEK_MODEL_PROVIDER"]
+    )
+
+
+chat_model = init_deepseek_chat_model(os.environ["DEEPSEEK_CHAT_MODEL_NAME"])
 
 
 def _deepseek_langchain_test(user_prompt: str = "你是谁？"):

@@ -21,16 +21,21 @@ class ChatDashScope(ChatOpenAI):
         return super().bind_tools(tools, tool_choice=tool_choice, **kwargs)
 
 
-chat_model = ChatDashScope(
-    base_url=os.environ["DASHSCOPE_BASE_URL"],
-    api_key=convert_to_secret_str(os.environ["DASHSCOPE_API_KEY"]),
-    model=os.environ["DASHSCOPE_CHAT_MODEL_NAME"],
-    extra_body={
-        "thinking": {
-            "type": "disabled"
+def init_dashscope_chat_model(model_name: str, thinking_type: str = "disabled"):
+    """初始化一个dashscope对话模型"""
+    return ChatDashScope(
+        base_url=os.environ["DASHSCOPE_BASE_URL"],
+        api_key=convert_to_secret_str(os.environ["DASHSCOPE_API_KEY"]),
+        model=model_name,
+        extra_body={
+            "thinking": {
+                "type": thinking_type
+            }
         }
-    }
-)
+    )
+
+
+chat_model = init_dashscope_chat_model(os.environ["DASHSCOPE_CHAT_MODEL_NAME"])
 
 
 def _dashscope_langchain_test(user_prompt: str = "你是谁？"):

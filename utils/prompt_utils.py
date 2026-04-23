@@ -18,17 +18,17 @@ prompt_config = parse_config(base_dir / "prompts.yaml")
 class PromptCloud(BaseModel):
     """提示词云管理"""
     agent_key: str = Field(..., description="智能体Key")
-    model_name: str = Field(..., description="模型名称Key")
+    provider_model_name: str = Field(..., description="提供商模型名称")
     system_prompt: str = Field(..., description="系统提示词")
     user_prompt: str = Field(..., description="用户提示词")
 
 
 def init_default_prompt_cloud_map() -> dict[str, PromptCloud]:
     """从 prompt_config 加载提示词"""
-    default_model_name = prompt_config.get("default_model_name", "")
+    default_provider_model_name = prompt_config.get("default_provider_model_name", "")
     return {
         agent_key: PromptCloud(agent_key=agent_key,
-                               model_name=default_model_name,
+                               provider_model_name=default_provider_model_name,
                                system_prompt=prompts["system_prompt"],
                                user_prompt=prompts["user_prompt"])
         for agent_key, prompts in prompt_config.get("prompts", {}).items()
@@ -60,7 +60,7 @@ def invoke_prompt_cloud_api() -> list[PromptCloud] | None:
             for item in items:
                 agent_key = f"{item['fileName']}:{item['funcName']}"
                 prompt_cloud = PromptCloud(agent_key=agent_key,
-                                           model_name=f"{item['modelType']}",
+                                           provider_model_name=f"{item['modelType']}",
                                            system_prompt=f"{item['introd']}",
                                            user_prompt=f"{item['value']}"
                                            )
@@ -92,7 +92,7 @@ def _call_agent_output_test():
     relpath, qualname = get_func_info(_call_agent_output_test)
     print(f"agent_key: {relpath}:{qualname}")
     result = get_prompt_cloud("extras/aa.py:a1")
-    print(result.system_prompt, result.user_prompt) # type: ignore
+    print(result.system_prompt, result.user_prompt)
 
 
 if __name__ == "__main__":
