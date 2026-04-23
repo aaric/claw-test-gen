@@ -71,7 +71,7 @@ async def simple_login(body: FakeLoginRequest, t: int | None = Query(default=Non
 @router.post("/std-fake-login", response_model=StdApiResponse[FakeLoginResult])
 async def std_fake_login(body: FakeLoginRequest):
     """标准测试登录接口"""
-    logger.info(f"std_fake_login -> body={body}")
+    logger.info(f"std_fake_login -> body={body.model_dump_json()}")
     return response_success(FakeLoginResult(
         id=1,
         username="admin",
