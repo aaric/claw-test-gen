@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+import secrets
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
