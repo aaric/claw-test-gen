@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
-from math import log
-import re
 import time
 from collections.abc import AsyncIterable
 from datetime import datetime
-import token
 from uuid import uuid4
 
-from fastapi import APIRouter, Request, BackgroundTasks, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Request, BackgroundTasks, Query, WebSocket, WebSocketDisconnect
 from fastapi.templating import Jinja2Templates
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel, Field
 
-from routes import books
 from utils.log_utils import create_text_logger
 from utils.prompt_utils import get_prompt_cloud
 from utils.redis_utils import aioredis_client
+from utils.request_utils import basic_auth_manager, text_log_event_generator
 from utils.response_utils import StdApiResponse, StdBizException, response_success
 
 
@@ -153,42 +150,12 @@ async def sse_log_generate(task_id: str):
     return {"status": "ok"}
 
 
-async def _log_event_generator(request: Request, task_id: str):
-    """日志事件生成器"""
-    try:
-        while True:
-            if await request.is_disconnected():
-                logger.info(f"客户端已断开, task_id: {task_id}")
-                break
-
-            try:
-                result = await aioredis_client.blpop(f"task:{task_id}:logs", timeout=30)  # type: ignore
-            except Exception as e:
-                logger.warning(f"日志出队失败: {e}")
-                yield b": heartbeat\n\n"
-                continue
-
-            if result is None:
-                yield b": heartbeat\n\n"
-                continue
-
-            _, log_data = result
-            if log_data == "[DONE]":
-                yield "event: done\ndata: 任务日志推送完成\n\n".encode("utf-8")
-                break
-
-            logger.info(f"日志出队: {log_data}")
-            yield f"event: log\ndata: {log_data}\n\n".encode("utf-8")
-    finally:
-        logger.info(f"SSE连接关闭, task_id: {task_id}")
-
-
 @router.get("/sse-log-stream/{task_id}")
 async def sse_log_stream(request: Request, task_id: str):
     """日志SSE流输出"""
     logger.info(f"sse_log_stream -> task_id={task_id}")
     return EventSourceResponse(
-        _log_event_generator(request, task_id),
+        text_log_event_generator(request, task_id),
         headers={"Content-Type": "text/event-stream; charset=utf-8"}
     )
 
@@ -236,3 +203,10 @@ async def invoke_prompt_api(agent_key: str = "extras/aa.py:a1"):
     )
     logger.info(f"invoke_prompt_api -> user_prompt_str={user_prompt_str}")
     return response_success(prompt_cloud)
+
+
+@router.get("/http-basic-auth")
+async def http_basic_auth(username: str = Depends(basic_auth_manager)):
+    """HTTP基础认证"""
+    logger.info(f"http_basic_auth -> username={username}")
+    return response_success({"login": "ok"})

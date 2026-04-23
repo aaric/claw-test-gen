@@ -77,6 +77,11 @@ def response_error(code: int, message: str) -> StdApiResponse:
     return StdApiResponse.error(code=code, message=message)
 
 
+def response_auth_error(message: str = "无权限访问") -> StdApiResponse:
+    """无权限访问错误响应"""
+    return StdApiResponse.error(code=401, message=message)
+
+
 class StdBizException(Exception):
     """统一业务异常信息"""
 
