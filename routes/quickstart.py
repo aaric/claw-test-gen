@@ -206,7 +206,7 @@ async def invoke_prompt_api(agent_key: str = "extras/aa.py:a1"):
 
 
 @router.get("/http-basic-auth")
-async def http_basic_auth(username: str = Depends(basic_auth_manager)):
+async def http_basic_auth(credentials_username: str = Depends(basic_auth_manager)):
     """HTTP基础认证"""
-    logger.info(f"http_basic_auth -> username={username}")
+    logger.info(f"http_basic_auth -> credentials_username={credentials_username}")
     return response_success({"login": "ok"})
