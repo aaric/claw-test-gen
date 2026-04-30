@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from routes import deepseek, books, quickstart
-from calendar import c
+from routes import deepseek_routes, books_routes, quickstart_routes
 import time
 import uuid
 
@@ -60,9 +59,9 @@ def create_app() -> FastAPI:
 
     # 定义路由
     api_prefix = "/api/claude-test-gen"
-    _app.include_router(quickstart.router, prefix=f"{api_prefix}/quickstart", tags=["quickstart"])
-    _app.include_router(deepseek.router, prefix=f"{api_prefix}/deepseek", tags=["deepseek"])
-    _app.include_router(books.router, prefix=f"{api_prefix}/books", tags=["books"])
+    _app.include_router(quickstart_routes.router, prefix=f"{api_prefix}/quickstart", tags=["quickstart"])
+    _app.include_router(deepseek_routes.router, prefix=f"{api_prefix}/deepseek", tags=["deepseek"])
+    _app.include_router(books_routes.router, prefix=f"{api_prefix}/books", tags=["books"])
 
     # 静态资源
     _app.mount("/resoures", StaticFiles(directory="resoures"), name="resoures")
