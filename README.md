@@ -25,7 +25,7 @@ uv add -U langchain langchain-deepseek langchain-community langgraph-cli[inmem]
 uv add -U fastapi[standard] fastapi-cdn-host gunicorn jinja2
 uv add -U tortoise-orm asyncpg aerich
 uv add -U redis
-uv add -U from pyaml-env
+uv add -U langfuse
 ```
 
 ## 环境变量

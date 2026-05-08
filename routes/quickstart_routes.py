@@ -10,7 +10,6 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel, Field
 
 from utils.log_utils import create_text_logger
-from utils.prompt_utils import get_prompt_cloud
 from utils.redis_utils import aioredis_client
 from utils.request_utils import basic_auth_manager, text_log_event_generator
 from utils.response_utils import StdApiResponse, StdBizException, response_success
@@ -185,24 +184,6 @@ async def ws_broadcast_msg(msg: str):
     for client in websocket_clients.values():
         await client.send_text(msg)
     return response_success({"status": "ok"})
-
-
-@router.get("/invoke-prompt-api")
-async def invoke_prompt_api(agent_key: str = "extras/aa.py:a1"):
-    """调用提示词API"""
-    logger.info(f"invoke_prompt_api -> agent_key={agent_key}")
-    prompt_cloud = get_prompt_cloud(agent_key)
-    # user_prompt_str = str(prompt_cloud.user_prompt).format(**locals())  # type: ignore
-    whoami = "admin"
-    depts = ["aa", "bb", "cc"]
-    depts_len = len(depts)
-    user_prompt_str = str(prompt_cloud.user_prompt).format(  # type: ignore
-        whoami=whoami,
-        depts=depts,
-        depts_len=depts_len
-    )
-    logger.info(f"invoke_prompt_api -> user_prompt_str={user_prompt_str}")
-    return response_success(prompt_cloud)
 
 
 @router.get("/http-basic-auth")
