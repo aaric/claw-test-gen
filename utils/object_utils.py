@@ -17,7 +17,7 @@ class CamelBaseModel(BaseModel):
 class _AbcTaskEvent(CamelBaseModel, ABC):
     """抽象任务事件"""
     task_id: str = Field(..., description="任务ID")
-    task_type: str = Field(..., description="任务类型：test_case、step-breakdown、method-binding、test-report")
+    task_type: str = Field(..., description="任务类型：test-case、step-breakdown、method-binding、test-report")
     task_name: str = Field(..., description="任务名称")
 
 
@@ -25,7 +25,7 @@ class TaskInitEvent(_AbcTaskEvent):
     """初始化任务事件"""
     EVENT: ClassVar[str] = "init"
 
-    timestamp: int = Field(..., description="当前时间戳")
+    timestamp: int = Field(..., description="时间戳")
     filename: str | None = Field(None, description="文件名")
     runId: str | None = Field(None, description="运行ID")
 
@@ -41,7 +41,7 @@ class TaskLogEvent(_AbcTaskEvent):
     elapsed_seconds: float = Field(0.0, description="已耗时（秒）")
     progress_percent: int = Field(0, ge=0, le=100, description="进度百分比（0-100）")
     status: str = Field(..., description="任务状态：pending, running, completed, failed, cancelled")
-    timestamp: int = Field(..., description="当前时间戳")
+    timestamp: int = Field(..., description="时间戳")
 
 
 T = TypeVar("T")
@@ -52,7 +52,7 @@ class TaskDataEvent(_AbcTaskEvent, Generic[T]):
     EVENT: ClassVar[str] = "data"
 
     data: list[T] = Field(default_factory=list, description="任务数据")
-    timestamp: int = Field(..., description="当前时间戳")
+    timestamp: int = Field(..., description="时间戳")
 
 
 class TaskDoneEvent(_AbcTaskEvent):
@@ -65,7 +65,7 @@ class TaskDoneEvent(_AbcTaskEvent):
 
 if __name__ == "__main__":
     task_id = "1234"
-    task_type = "test_case"
+    task_type = "test-case"
     task_name = "测试用例"
 
     init_event = TaskInitEvent(
