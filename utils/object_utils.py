@@ -17,7 +17,7 @@ class CamelBaseModel(BaseModel):
 class _AbcTaskEvent(CamelBaseModel, ABC):
     """抽象任务事件"""
     task_id: str = Field(..., description="任务ID")
-    task_type: str = Field(..., description="任务类型：test-case、step-breakdown、method-binding、test-report")
+    task_type: str = Field(..., description="任务类型：test-case、test-step-breakdown、test-method-binding、test-report")
     task_name: str = Field(..., description="任务名称")
 
 
