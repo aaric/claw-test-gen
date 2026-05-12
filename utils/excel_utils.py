@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 import pandas as pd
 
 
@@ -25,5 +27,6 @@ def find_excel_header_idx(excel_path: Path, keywords: list):
 
 
 if __name__ == "__main__":
-    test_case_v3_path = Path("E:\\Workspaces\\Python\\test-step-generate\\data\\input\\test-case-v3-min.xlsx")
+    load_dotenv()
+    test_case_v3_path = Path(os.environ["BASE_DATA_DIR"]) /  "input" / "test-case-v3-min.xlsx"
     print(find_test_excel_header_idx(test_case_v3_path, "test_step_breakdown"))
