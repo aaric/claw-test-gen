@@ -2,6 +2,7 @@
 import time
 from collections.abc import AsyncIterable
 from datetime import datetime
+from typing import Optional
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Request, BackgroundTasks, Query, WebSocket, WebSocketDisconnect
@@ -10,6 +11,7 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel, Field
 
 from utils.log_utils import create_text_logger
+from utils.object_utils import CamelBaseModel
 from utils.redis_utils import aioredis_client
 from utils.request_utils import basic_auth_manager, text_log_event_generator
 from utils.response_utils import StdApiResponse, StdBizException, response_success
@@ -191,3 +193,65 @@ async def http_basic_auth(credentials_username: str = Depends(basic_auth_manager
     """HTTP基础认证"""
     logger.info(f"http_basic_auth -> credentials_username={credentials_username}")
     return response_success({"login": "ok"})
+
+
+class User(CamelBaseModel):
+    """用户数据"""
+    id: int = Field(..., description="ID")
+    username: str = Field(..., description="用户名")
+    first_name: str = Field(..., description="名字")
+    second_name: str = Field(..., description="姓氏")
+    email: str = Field(..., description="邮箱")
+
+    def __str__(self):
+        return f"这是{self.username}，全名叫{self.first_name} {self.second_name}，多多关照！"
+
+
+@router.get("/user-camel")
+async def user_camel():
+    """返回CamelCase风格用户数据"""
+    json_str = """
+    {
+      "id": 1,
+      "username": "admin",
+      "first_name": "San",
+      "second_name": "Zhang",
+      "email": "admin@example.com"
+    }
+    """
+    user = User.model_validate_json(json_str)
+    return response_success(user)
+
+
+async def user_event_generator(request: Request, output_type: str = "text"):
+    """用户数据事件生成器"""
+    logger.info(f"user_event_generator -> request={request}, output_type={output_type}")
+    users = [
+        User(id=1, username="admin", first_name="San", second_name="Zhang", email="admin@example.com"),
+        User(id=2, username="user", first_name="Si", second_name="Li", email="user@example.com"),
+        User(id=3, username="guest", first_name="Wu", second_name="Wang", email="guest@example.com")
+    ]
+    event_id = 1
+    yield f"id={str(event_id)}\nevent: init\ndata: 已初始化{len(users)}条用户数据...\n\n"
+    for user in users:
+        event_id += 1
+        if output_type == "json":
+            yield f"id: {str(event_id)}\nevent: data\ndata: {user.model_dump_json(by_alias=True)}\n\n"
+        else:
+            yield f"id: {str(event_id)}\nevent: data\ndata: {str(user)}\n\n"
+        time.sleep(3)
+    event_id += 1
+    yield f"id: {str(event_id)}\nevent: done\ndata: [DONE]\n\n"
+
+
+@router.get("/sse-user-stream")
+async def sse_user_stream(request: Request,
+                          output_type: Optional[str] | None = Query(default="text", description="输出类型：text、json",
+                                                                    example="text")
+                          ):
+    """测试SSE流输出"""
+    logger.info(f"sse_user_stream -> output_type={output_type}")
+    return EventSourceResponse(
+        user_event_generator(request, output_type),  # type: ignore
+        headers={"Content-Type": "text/event-stream; charset=utf-8"}
+    )
