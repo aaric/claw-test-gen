@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
-import logging.config
+import logging
 import os
 from datetime import datetime
-from venv import logger
 
 logging_level_key = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -39,7 +38,7 @@ class SimpleJsonStructuredFormatter(logging.Formatter):
 
         # 添加额外属性
         if hasattr(record, "extra_data"):
-            log_data.update(record.extra_data) # type: ignore
+            log_data.update(record.extra_data)  # type: ignore
 
         # 格式化输出
         return json.dumps(log_data, ensure_ascii=False)
@@ -80,7 +79,7 @@ class SimpleTextStructuredFormatter(logging.Formatter):
         return log_line
 
 
-def create_text_logger(name, json_format=False):
+def create_text_logger(name):
     """创建Spring Boot风格的日志记录器"""
     logger = logging.getLogger(name)
     # logger.setLevel(logging.INFO)

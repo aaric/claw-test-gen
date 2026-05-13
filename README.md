@@ -1,12 +1,14 @@
 # claw-test-gen
 
-基于 FastAPI 的 Web 应用，通过 LangChain 框架集成 DeepSeek LLM API。
+基于 FastAPI 的 Web 应用，通过 LangChain 框架集成多平台 LLM API（DeepSeek、阿里百炼）。
 
 ## 技术栈
 
 - Python 3.12 / FastAPI / Uvicorn
-- LangChain + DeepSeek
+- LangChain + DeepSeek / 阿里百炼（DashScope）
+- Langfuse（LLM 可观测性，可选）
 - Redis（异步客户端，用于 SSE 任务队列）
+- Pandas + OpenPyXL（Excel 解析）
 - Gunicorn（生产部署）
 - Jinja2（模板引擎）
 - Tortoise ORM + Aerich（已声明，尚未启用）
@@ -21,24 +23,37 @@ uv sync
 
 ```bash
 uv add -U python-dotenv requests
-uv add -U langchain langchain-deepseek langchain-community langgraph-cli[inmem]
+uv add -U langchain langchain-deepseek langchain-community langchain-openai langgraph-cli[inmem]
 uv add -U fastapi[standard] fastapi-cdn-host gunicorn jinja2
 uv add -U tortoise-orm asyncpg aerich
 uv add -U redis
 uv add -U langfuse
+uv add -U pandas openpyxl
 ```
 
 ## 环境变量
 
 在项目根目录创建 `.env` 文件：
 
-```
+```env
+# DeepSeek
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_API_KEY=your_api_key
 DEEPSEEK_CHAT_MODEL_NAME=deepseek-chat
 DEEPSEEK_MODEL_PROVIDER=deepseek
+
+# 阿里百炼 DashScope
+DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+DASHSCOPE_API_KEY=your_api_key
+DASHSCOPE_CHAT_MODEL_NAME=qwen3.6-plus
+
+# Langfuse（可选，设为 true 启用 LLM 调用追踪）
+LANGFUSE_TRACING=false
+
+# 其他
 LOG_LEVEL=INFO
 REDIS_CONNECTION_STRING=redis://localhost:6379/0
+BASE_DATA_DIR=/path/to/data
 ```
 
 ## 启动
@@ -70,8 +85,11 @@ gunicorn -c gunicorn.conf.py main:app
 | `/quickstart/sse-chat-stream` | POST | SSE 文本流式输出 |
 | `/quickstart/sse-log-generate` | GET | 向 Redis 任务队列推送日志 |
 | `/quickstart/sse-log-stream/{task_id}` | GET | SSE 日志流式消费（带心跳保活） |
+| `/quickstart/sse-user-stream` | GET | SSE 用户数据流式输出（支持 text/json 格式） |
 | `/quickstart/ws-chat/{chat_id}` | WebSocket | WebSocket 聊天 |
 | `/quickstart/ws-broadcast-msg` | GET | WebSocket 群发消息 |
+| `/quickstart/http-basic-auth` | GET | HTTP Basic 认证演示 |
+| `/quickstart/user-camel` | GET | CamelCase 风格用户数据演示 |
 
 ### deepseek — DeepSeek API
 
@@ -90,14 +108,21 @@ gunicorn -c gunicorn.conf.py main:app
 ```
 main.py              # 应用入口，create_app() 工厂模式
 ├── routes/          # API 路由
-│   ├── quickstart   # 演示端点（参数解析、模板渲染、SSE、WebSocket）
-│   ├── deepseek     # DeepSeek API 对接
-│   └── books        # 图书查询
-├── llms/            # LLM 集成（LangChain 模型初始化 + 原始 API 调用）
+│   ├── quickstart_routes.py  # 演示端点（参数解析、模板渲染、SSE、WebSocket、认证）
+│   ├── deepseek_routes.py    # DeepSeek API 对接
+│   └── books_routes.py       # 图书查询
+├── llms/            # LLM 集成
+│   ├── deepseek.py           # DeepSeek 模型初始化 + 余额查询
+│   └── aliyun.py             # 阿里百炼 DashScope 模型初始化（支持 thinking 模式）
 ├── utils/           # 工具模块
-│   ├── response_utils.py   # 统一响应格式 StdApiResponse、全局异常处理
-│   ├── log_utils.py        # 结构化日志（JSON / Spring Boot 风格）
-│   └── redis_utils.py      # Redis 同步/异步客户端
+│   ├── response_utils.py     # 统一响应格式 StdApiResponse、全局异常处理
+│   ├── request_utils.py      # HTTP Basic 鉴权、SSE 日志事件生成器
+│   ├── log_utils.py          # 结构化日志（JSON / Spring Boot 风格）
+│   ├── redis_utils.py        # Redis 同步/异步客户端
+│   ├── llm_utils.py          # LLM 统一初始化（按 provider 分发）+ Langfuse 回调
+│   ├── object_utils.py       # CamelBaseModel（Pydantic 驼峰字段模型）
+│   ├── base_utils.py         # 基础工具（时间戳）
+│   └── excel_utils.py        # Excel 解析（按关键字定位表头行）
 ├── templates/       # Jinja2 模板
 └── resoures/        # 静态资源
 ```
