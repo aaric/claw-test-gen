@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain.tools import tool
 from langchain.agents import create_agent
-
 
 load_dotenv(override=True)
 
