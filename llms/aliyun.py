@@ -13,9 +13,14 @@ load_dotenv(override=True)
 class ChatDashScope(ChatOpenAI):
     """基于 ChatOpenAI 定义阿里百炼模型"""
 
-    def bind_tools(self, tools: Sequence[Union[BaseTool, dict, Any]], *, tool_choice: str | dict | None = None,
-                   **kwargs: Any) -> Any:
-        # 解决阿里百炼 tool_choice 报错，thinking 模式只支持 None / "none" / "auto"
+    def bind_tools(
+        self,
+        tools: Sequence[Union[BaseTool, dict, Any]],
+        *,
+        tool_choice: str | dict | None = None,
+        **kwargs: Any
+    ) -> Any:
+        # 解决 Qwen3.5+ 不支持 tool_choice 报错，thinking 模式只支持 None / "none" / "auto"
         if tool_choice not in (None, "none", "auto"):
             tool_choice = "auto"
         return super().bind_tools(tools, tool_choice=tool_choice, **kwargs)

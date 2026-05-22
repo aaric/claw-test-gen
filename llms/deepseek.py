@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-from typing import Any
+from typing import Any, Callable, Sequence
 
+from langchain_community.tools import BaseTool
 from langchain_deepseek import ChatDeepSeek
 from langchain_core.language_models import LanguageModelInput
 from langchain_core.messages import AIMessage
@@ -61,9 +62,29 @@ class ChatDeepSeekV4(ChatDeepSeek):
 
         return payload
 
+    def bind_tools(
+        self,
+        tools: Sequence[dict[str, Any] | type | Callable | BaseTool],
+        *,
+        tool_choice: dict | str | bool | None = None,
+        strict: bool | None = None,
+        parallel_tool_calls: bool | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        # DeepSeek v4 不支持 tool_choice 报错，thinking 模式只支持 None / "none" / "auto"
+        if tool_choice not in (None, "none", "auto"):
+            tool_choice = "auto"
+        return super().bind_tools(
+            tools,
+            tool_choice=tool_choice,
+            strict=strict,
+            parallel_tool_calls=parallel_tool_calls,
+            **kwargs,
+        )
+
 
 def init_deepseek_chat_model(model_name: str):
-    """初始化一个dashscope对话模型"""
+    """初始化一个deepseek对话模型"""
     return ChatDeepSeekV4(
         base_url=os.environ["DEEPSEEK_BASE_URL"],
         api_key=convert_to_secret_str(os.environ["DEEPSEEK_API_KEY"]),
