@@ -26,7 +26,8 @@ class SimpleOutput(BaseModel):
 def test_simple_agent():
     """测试简单智能体"""
     # my_model = init_custom_chat_model("deepseek:deepseek-chat")
-    my_model = init_custom_chat_model("deepseek:deepseek-v4-flash")
+    # my_model = init_custom_chat_model("deepseek:deepseek-v4-flash")
+    my_model = init_custom_chat_model("dashscope:qwen3.6-plus")
     # my_agent = create_agent(model=my_model, system_prompt="你是一名数学老师。", tools=[multiply])
     my_agent = create_agent(
         model=my_model,
@@ -35,8 +36,8 @@ def test_simple_agent():
         response_format=ToolStrategy(SimpleOutput)
     )
     response = my_agent.invoke({"messages": [{"role": "user", "content": "1*1 等于多少？"}]})
-    print(response)
-    # print(response["structured_response"])
+    # print(response)
+    print(response["structured_response"])
 
 
 if __name__ == "__main__":
