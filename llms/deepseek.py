@@ -13,6 +13,12 @@ from langchain_core.utils import convert_to_secret_str
 load_dotenv(override=True)
 
 
+# chat_model = init_chat_model(
+#     model=os.environ["DEEPSEEK_CHAT_MODEL_NAME"],
+#     model_provider=os.environ["DEEPSEEK_MODEL_PROVIDER"]
+# )
+
+
 class ChatDeepSeekV4(ChatDeepSeek):
     """基于 ChatDeepSeek 定义深度求索 V4 模型"""
 
@@ -56,18 +62,8 @@ class ChatDeepSeekV4(ChatDeepSeek):
         return payload
 
 
-# chat_model = init_chat_model(
-#     model=os.environ["DEEPSEEK_CHAT_MODEL_NAME"],
-#     model_provider=os.environ["DEEPSEEK_MODEL_PROVIDER"]
-# )
-
-
 def init_deepseek_chat_model(model_name: str):
     """初始化一个dashscope对话模型"""
-    # return init_chat_model(
-    #     model=model_name,
-    #     model_provider=os.environ["DEEPSEEK_MODEL_PROVIDER"]
-    # )
     return ChatDeepSeekV4(
         base_url=os.environ["DEEPSEEK_BASE_URL"],
         api_key=convert_to_secret_str(os.environ["DEEPSEEK_API_KEY"]),
