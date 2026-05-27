@@ -17,5 +17,5 @@ RUN uv sync -vv \
 
 EXPOSE 8000
 
-# CMD ["uv", "run", "fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8125"]
-CMD ["uv", "run", "gunicorn", "-c", "gunicorn.conf.py", "main:app"]
+# CMD ["uv", "run", "fastapi", "run", "fastapi_app.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "gunicorn", "-c", "gunicorn.conf.py", "fastapi_app:app"]

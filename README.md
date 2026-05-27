@@ -60,10 +60,10 @@ BASE_DATA_DIR=/path/to/data
 
 ```bash
 # 开发环境
-fastapi dev main.py --host "0.0.0.0" --port 8000
+fastapi dev fastapi_app.py --host "0.0.0.0" --port 8000
 
 # 生产环境（仅 Linux）
-gunicorn -c gunicorn.conf.py main:app
+gunicorn -c gunicorn.conf.py fastapi_app:app
 ```
 
 ## API 接口
